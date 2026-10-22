@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Artwork Test"><meta name="theme-color" content="#8a5a1c">
+</head><body>
+<title>Artwork Loading Test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex, nofollow">
+<style>
+/* Layout: one narrow column of checks in the order they run, then instructions and a results sheet. System fonts only, so the page needs nothing from the internet. */
+:root {
+  --bg: #f4f1ec; --panel: #ffffff; --ink: #1f1b16; --muted: #6b6258; --line: #ddd5ca; --accent: #8a5a1c;
+  --pass: #1f7a46; --fail: #b3261e; --warn: #9a6400; --info: #2f5d8a;
+  --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #16130f; --panel: #211d18; --ink: #efe8dd; --muted: #a89c8c; --line: #3a332a; --accent: #d9a35a; --pass: #5cc98a; --fail: #ff8a80; --warn: #e6b450; --info: #8ab8e6; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #16130f; --panel: #211d18; --ink: #efe8dd; --muted: #a89c8c; --line: #3a332a; --accent: #d9a35a; --pass: #5cc98a; --fail: #ff8a80; --warn: #e6b450; --info: #8ab8e6; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; margin: 0; }
+main { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-size: 1.5rem; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.05rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 65ch; }
+.where { font: 600 13px var(--body); color: var(--accent); letter-spacing: .03em; text-transform: uppercase; }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.head { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+.num { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 6px; }
+.chip { font: 600 12px/1 var(--body); letter-spacing: .04em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.chip.pass { color: var(--pass); } .chip.fail { color: var(--fail); } .chip.warn { color: var(--warn); } .chip.wait { color: var(--muted); } .chip.info { color: var(--info); }
+.detail { color: var(--muted); font-size: 13.5px; overflow-wrap: anywhere; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+button { font: 600 14px var(--body); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: .5; cursor: default; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+canvas { width: 100%; aspect-ratio: 3 / 4; max-width: 100%; border-radius: 6px; background: var(--line); display: block; }
+figcaption { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+progress { width: 100%; }
+textarea { width: 100%; box-sizing: border-box; min-height: 220px; font: 12px/1.45 var(--mono); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+ol.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; max-width: 65ch; }
+.rec { font: 13px/1.5 var(--mono); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <header style="display:grid;gap:6px">
+    <p class="where" id="where">Checking where this page is running…</p>
+    <h1>Artwork Loading Test</h1>
+    <p class="lede">Stage 3 test for Future Classic. This page is separate from the game: it has its own web address and its own storage, so it cannot see or change the game, its boards or your saved progress.</p>
+  </header>
+
+  <section>
+    <div class="head"><h2><span class="num">1</span>This device and page</h2><span class="chip wait" id="c-env">Checking</span></div>
+    <p class="detail" id="d-env"></p>
+    <p class="detail" id="d-lastlog"></p>
+  </section>
+
+  <section>
+    <div class="head"><h2><span class="num">2</span>The eight pictures load</h2><span class="chip wait" id="c-files">Waiting</span></div>
+    <p class="detail" id="d-files">Eight real board pictures (1.8 MB), each checked byte for byte against its fingerprint.</p>
+  </section>
+
+  <section>
+    <div class="head"><h2><span class="num">3</span>Drawing on a canvas</h2><span class="chip wait" id="c-canvas">Waiting</span></div>
+    <p class="detail" id="d-canvas">The game draws boards on a canvas and sometimes reads pixels back. A security block here would stop the artwork working.</p>
+    <div class="grid" id="gallery"></div>
+  </section>
+
+  <section>
+    <div class="head"><h2><span class="num">4</span>Service worker (offline engine)</h2><span class="chip wait" id="c-sw">Waiting</span></div>
+    <p class="detail" id="d-sw"></p>
+    <div class="row" id="sw-buttons" hidden>
+      <button class="primary" id="b-install">Make available offline</button>
+      <button id="b-swcheck">Check offline status</button>
+      <button id="b-update">Check for an update</button>
+    </div>
+    <progress id="swprog" max="1" value="0" hidden></progress>
+  </section>
+
+  <section id="s-store">
+    <div class="head"><h2><span class="num">5</span>Keep pictures on this device</h2><span class="chip wait" id="c-store">Not saved yet</span></div>
+    <p class="detail" id="d-store">Saves all eight pictures in this browser’s own storage. Nothing is saved unless every picture downloads and matches its fingerprint; a failed attempt leaves any earlier complete copy untouched.</p>
+    <progress id="prog" max="1" value="0" hidden></progress>
+    <div class="row">
+      <button class="primary" id="b-save">Save pictures on this device</button>
+      <button id="b-local">Show pictures from this device only</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2><span class="num">6</span>Failed and interrupted downloads</h2><span class="chip wait" id="c-fail">Not run</span></div>
+    <p class="detail" id="d-failintro"></p>
+    <div class="row">
+      <button id="b-missing">Try with a missing file</button>
+      <button id="b-corrupt">Try with a damaged file</button>
+      <button id="b-slow">Slow download (switch on airplane mode during it)</button>
+    </div>
+    <p class="detail" id="d-fail"></p>
+  </section>
+
+  <section>
+    <div class="head"><h2><span class="num">7</span>Sample saved progress</h2><span class="chip info" id="c-prog">Sample</span></div>
+    <p class="detail">A stand-in for a player’s saved progress (it is not your game’s data). It must survive closing the page, airplane mode, updates and saved copies.</p>
+    <div class="rec" id="rec"></div>
+    <div class="row">
+      <button id="b-game">Record a game</button>
+      <button id="b-resetprog">Reset sample progress</button>
+    </div>
+  </section>
+
+  <section id="s-copy">
+    <div class="head"><h2><span class="num">8</span>Save an offline copy</h2><span class="chip wait" id="c-copy">Not saved</span></div>
+    <p class="detail" id="d-copy">Saves this whole test as one HTML file, with all eight pictures and the sample progress inside it, so it can be opened with no connection.</p>
+    <div class="row"><button class="primary" id="b-offcopy">Save offline copy</button></div>
+  </section>
+
+  <section>
+    <div class="head"><h2><span class="num">9</span>How to test on your devices</h2><span class="chip info">Your test</span></div>
+    <div id="howto"></div>
+  </section>
+
+  <section>
+    <div class="head"><h2><span class="num">10</span>Results</h2><span class="chip wait" id="c-results">Collecting</span></div>
+    <textarea id="results" readonly aria-label="Results to copy"></textarea>
+    <div class="row">
+      <button class="primary" id="b-copy">Copy results</button>
+      <button id="b-clear">Remove this test’s data from this device</button>
+    </div>
+    <p class="detail" id="d-copyres"></p>
+  </section>
+</main>
+
+<script data-p0>
+(() => {
+  'use strict';
+  const ART = [{"file": "art/909abc4fba5ab601.webp", "bytes": 234818, "sha256": "909abc4fba5ab6019ae57f09a717ff64ed3f25b9bffbf736f34e3fc192b5c95b", "type": "image/webp", "label": "The Fractured Kingdom, left field"}, {"file": "art/5cae128e920b7c5f.webp", "bytes": 231950, "sha256": "5cae128e920b7c5f5b5b2f4bf58a7f0c24b87f40f2e5c6248af614bbb2e17339", "type": "image/webp", "label": "The Starry Blossom, right field (tablet)"}, {"file": "art/97aea7182fc3739c.webp", "bytes": 175796, "sha256": "97aea7182fc3739c07dc3a619126896c196982f56bab2ca3f8abf5059dec8d41", "type": "image/webp", "label": "The Ocean\u2019s Fury, left field"}, {"file": "art/df339ca910e990cb.webp", "bytes": 87080, "sha256": "df339ca910e990cb88f0a7240c473d910a826429b34c8a3dba3555f529865fe0", "type": "image/webp", "label": "The Inventor\u2019s Codex, right page"}, {"file": "art/4b2b4b7a87f1079c.png", "bytes": 10037, "sha256": "4b2b4b7a87f1079c68d80a8678a200f785f71420d7209ac19b4c63b854045f16", "type": "image/png", "label": "The Cathedral of Hours (PNG piece)"}, {"file": "art/4fb749dc118b6936.webp", "bytes": 87878, "sha256": "4fb749dc118b69364d379c5ac4f0cdd71d4a35d17d89188d297c2d6c593c6925", "type": "image/webp", "label": "The Burning Horizon, right field"}, {"file": "art/afa725b0b854b9bf.webp", "bytes": 619430, "sha256": "afa725b0b854b9bf60c19058b009b1c2f97e5fd4d2a8a014fb985f2d9a48adaf", "type": "image/webp", "label": "The Fractured Kingdom, largest phone version"}, {"file": "art/b0f659a566f9e9f9.webp", "bytes": 327430, "sha256": "b0f659a566f9e9f998ddac4d027f3161e92b1961f0d99caa5f351b9e4b850412", "type": "image/webp", "label": "The Starry Blossom, largest phone version"}];
+  const BUILD = '1';
+  const EMBED = window.P0_EMBED || null;                      // present only inside a saved offline copy
+  const MODE = EMBED ? 'file' : (/github\.io$/.test(location.hostname) || /[?&]mode=pages\b/.test(location.search)) ? 'pages' : 'artifact';
+  const PRISTINE = document.querySelector('main').innerHTML;   // the page as first loaded, before any check runs (a saved copy starts from this)
+  const R = {};
+  const $ = id => document.getElementById(id);
+  const DB = 'p0-artwork', LOGKEY = 'p0.log', PROGKEY = 'p0.progress';
+  const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(2) + ' MB' : Math.round(n / 1e3) + ' KB';
+  function chip(id, state, text) { const c = $('c-' + id); if (c) { c.className = 'chip ' + state; c.textContent = text; } }
+  function set(id, state, text, detail) { R[id] = { state, text, detail: detail || '' }; chip(id, state, text); if (detail != null && $('d-' + id)) $('d-' + id).textContent = detail; report(); }
+  const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+  async function sha(buf) { if (!(window.crypto && crypto.subtle)) return null; const h = await crypto.subtle.digest('SHA-256', buf); return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join(''); }
+  function timeoutFetch(url, ms, signal) { const c = new AbortController(); const t = setTimeout(() => c.abort(), ms); if (signal) signal.addEventListener('abort', () => c.abort()); return fetch(url, { cache: 'no-store', signal: c.signal }).finally(() => clearTimeout(t)); }
+  const WHERE = { artifact: 'Running inside Claude (Test A)', pages: 'Running on GitHub Pages (Test B) · build ' + BUILD, file: 'Running as a saved offline copy (Test A) · build ' + BUILD };
+  $('where').textContent = WHERE[MODE];
+
+  /* ---------- sample progress ---------- */
+  function progress() { try { return JSON.parse(ls.get(PROGKEY) || 'null'); } catch (e) { return null; } }
+  function showProg() { const p = progress(); $('rec').textContent = p ? 'Games ' + p.games + ' · wins ' + p.wins + ' · boards owned: ' + p.owned.join(', ') + ' · last changed ' + p.updated.replace('T', ' ').slice(0, 19) + ' UTC · started in: ' + p.origin : 'No sample progress here yet.'; report(); }
+  function ensureProg() {
+    if (progress()) return;
+    if (EMBED && EMBED.progress) { ls.set(PROGKEY, JSON.stringify(Object.assign({}, EMBED.progress, { importedFromCopy: true }))); return; }   // a saved copy brings its progress, into an empty copy only (as the game does)
+    ls.set(PROGKEY, JSON.stringify({ games: 12, wins: 7, owned: ['classic.walnut', 'legendary.burning'], updated: new Date().toISOString(), origin: MODE }));
+  }
+  $('b-game').onclick = () => { const p = progress() || { games: 0, wins: 0, owned: [], origin: MODE }; p.games++; if (Math.random() < 0.5) p.wins++; p.updated = new Date().toISOString(); ls.set(PROGKEY, JSON.stringify(p)); showProg(); };
+  $('b-resetprog').onclick = () => { ls.del(PROGKEY); ensureProg(); showProg(); };
+
+  /* ---------- 1. environment ---------- */
+  const env = {};
+  async function environment() {
+    env.when = new Date().toISOString(); env.online = navigator.onLine; env.ua = navigator.userAgent; env.screen = innerWidth + '×' + innerHeight + ' @' + (devicePixelRatio || 1) + 'x';
+    env.origin = location.protocol === 'file:' ? 'a local file' : location.origin; env.secure = !!window.isSecureContext;
+    try { env.framed = window.self !== window.top; } catch (e) { env.framed = true; }
+    env.standalone = !!((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone);
+    env.swApi = 'serviceWorker' in navigator; env.cacheApi = 'caches' in window; env.idb = 'indexedDB' in window;
+    env.localStorage = ls.set('p0.probe', '1') && ls.get('p0.probe') === '1'; ls.del('p0.probe');
+    try { if (navigator.storage && navigator.storage.estimate) { const e = await navigator.storage.estimate(); env.quota = fmt(e.quota || 0); } } catch (e) {}
+    try { env.persisted = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : 'unknown'; } catch (e) { env.persisted = 'unknown'; }
+    let gameKeys = 0; try { for (let i = 0; i < localStorage.length; i++) if (/^fc\./.test(localStorage.key(i))) gameKeys++; } catch (e) {}
+    env.gameKeysVisible = gameKeys;
+    const lines = [(env.online ? 'Opened with a connection.' : 'Opened with no connection.'), 'Screen ' + env.screen + '.', 'Opened as a home-screen app: ' + (env.standalone ? 'yes' : 'no') + '.', 'Secure page: ' + (env.secure ? 'yes' : 'no') + '. Inside a viewer frame: ' + (env.framed ? 'yes' : 'no') + '.', 'Browser storage ' + (env.localStorage ? 'works' : 'is blocked') + (env.quota ? ' (' + env.quota + ' allowed)' : '') + '. Game data visible from this page: ' + (gameKeys ? gameKeys + ' keys (unexpected)' : 'none (as expected)') + '.'];
+    set('env', env.gameKeysVisible ? 'fail' : 'pass', env.online ? 'Online' : 'Offline', lines.join(' '));
+    let log = []; try { log = JSON.parse(ls.get(LOGKEY) || '[]'); } catch (e) {}
+    const prev = log[log.length - 1];
+    if (prev) $('d-lastlog').textContent = 'Previous visit: ' + prev.when.replace('T', ' ').slice(0, 19) + ' UTC, ' + (prev.online ? 'online' : 'offline') + (prev.fromDevice != null ? ', ' + prev.fromDevice + ' of ' + ART.length + ' pictures shown from this device' : '') + (prev.build ? ', build ' + prev.build : '') + '.';
+    log.push({ when: env.when, online: env.online, mode: MODE, build: MODE === 'artifact' ? null : BUILD }); ls.set(LOGKEY, JSON.stringify(log.slice(-12)));
+  }
+  function logVisit(patch) { let log = []; try { log = JSON.parse(ls.get(LOGKEY) || '[]'); } catch (e) {} if (log.length) Object.assign(log[log.length - 1], patch); ls.set(LOGKEY, JSON.stringify(log)); }
+
+  /* ---------- 2 + 3. load, check and draw the pictures ---------- */
+  const tiles = {};
+  function tile(a) { if (tiles[a.file]) return tiles[a.file]; const f = document.createElement('figure'), c = document.createElement('canvas'), cap = document.createElement('figcaption'); c.width = 300; c.height = 400; cap.textContent = a.label + ' · ' + fmt(a.bytes); f.append(c, cap); $('gallery').append(f); return (tiles[a.file] = { c, cap, a }); }
+  async function drawBlob(a, blob, how) {
+    const t = tile(a), url = URL.createObjectURL(blob);
+    try {
+      const img = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('could not decode')); im.src = url; });
+      const x = t.c.getContext('2d'), s = Math.max(t.c.width / img.naturalWidth, t.c.height / img.naturalHeight), w = img.naturalWidth * s, h = img.naturalHeight * s;
+      x.clearRect(0, 0, t.c.width, t.c.height); x.drawImage(img, (t.c.width - w) / 2, (t.c.height - h) / 2, w, h);
+      x.getImageData(0, 0, 4, 4); t.c.toDataURL('image/png').slice(0, 30);   // both throw if the canvas were blocked
+      t.cap.textContent = a.label + ' · ' + fmt(a.bytes) + ' · ' + how;
+      return { ok: true };
+    } catch (e) { t.cap.textContent = a.label + ' · ' + how + ' · ' + (e.name === 'SecurityError' ? 'blocked by security' : e.message); return { ok: false, err: e.name + ': ' + e.message }; }
+    finally { setTimeout(() => URL.revokeObjectURL(url), 2000); }
+  }
+  function blobFromDataURI(u) { const [h, d] = u.split(','), bin = atob(d), b = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i); return new Blob([b], { type: h.slice(5, h.indexOf(';')) }); }
+  async function pictures() {
+    if (EMBED) {   // a saved offline copy: every picture is inside the file
+      let ok = 0, drawn = 0, bytes = 0; const bad = [];
+      for (const a of ART) { const u = EMBED.art[a.file]; if (!u) { bad.push(a.file + ' missing from the copy'); continue; } const b = blobFromDataURI(u), buf = await b.arrayBuffer(), h = await sha(buf);
+        if (buf.byteLength !== a.bytes || (h && h !== a.sha256)) { bad.push(a.file + ' differs'); continue; } ok++; bytes += buf.byteLength; if ((await drawBlob(a, b, 'inside this file')).ok) drawn++; }
+      set('files', ok === ART.length ? 'pass' : 'fail', ok === ART.length ? 'Pass' : 'Fail', ok + ' of ' + ART.length + ' pictures found inside this file (' + fmt(bytes) + '), each identical to the original artwork, with no network used.' + (bad.length ? ' Problems: ' + bad.join('; ') : ''));
+      set('canvas', drawn === ART.length ? 'pass' : 'fail', drawn === ART.length ? 'Pass' : 'Fail', drawn + ' of ' + ART.length + ' pictures drawn and read back with no security block.');
+      logVisit({ fromDevice: drawn }); return;
+    }
+    let ok = 0, drawn = 0, bytes = 0, fromCache = 0; const t0 = performance.now(), bad = [], canvasBad = [];
+    for (const a of ART) {
+      try {
+        // on GitHub Pages the service worker answers from its cache when there is no connection; elsewhere this is a plain network fetch
+        const r = MODE === 'pages' ? await fetch(a.file) : await timeoutFetch(a.file, 20000); if (!r.ok) throw new Error('HTTP ' + r.status);
+        if (r.headers.get('x-p0-from') === 'cache') fromCache++;
+        const buf = await r.arrayBuffer(), h = await sha(buf);
+        if (buf.byteLength !== a.bytes || (h && h !== a.sha256)) throw new Error('bytes differ from the original');
+        ok++; bytes += buf.byteLength;
+        const d = await drawBlob(a, new Blob([buf], { type: a.type }), MODE === 'pages' && !navigator.onLine ? 'offline' : 'loaded'); if (d.ok) drawn++; else canvasBad.push(a.file + ' (' + d.err + ')');
+      } catch (e) { bad.push(a.file + ': ' + (e.name === 'AbortError' ? 'timed out' : e.message)); }
+    }
+    const ms = Math.round(performance.now() - t0);
+    set('files', ok === ART.length ? 'pass' : 'fail', ok === ART.length ? 'Pass' : 'Fail', ok + ' of ' + ART.length + ' files loaded (' + fmt(bytes) + ' in ' + (ms / 1000).toFixed(1) + ' s' + (fromCache ? ', ' + fromCache + ' from the offline cache' : '') + ')' + (ok ? ', each identical to the original artwork.' : '.') + (bad.length ? ' Problems: ' + bad.join('; ') : ''));
+    if (!ok) { set('canvas', 'warn', 'Skipped', 'No file loaded, so there was nothing to draw.'); return; }
+    set('canvas', drawn === ART.length ? 'pass' : 'fail', drawn === ART.length ? 'Pass' : 'Fail', drawn + ' of ' + ART.length + ' pictures drawn and read back from the canvas with no security block.' + (canvasBad.length ? ' Problems: ' + canvasBad.join('; ') : ''));
+    if (MODE === 'pages') logVisit({ fromDevice: navigator.onLine ? null : drawn });
+  }
+
+  /* ---------- 4. service worker ---------- */
+  function swAsk() { return new Promise(res => { const c = navigator.serviceWorker && navigator.serviceWorker.controller; if (!c) return res(null); const ch = new MessageChannel(); const t = setTimeout(() => res(null), 3000); ch.port1.onmessage = e => { clearTimeout(t); res(e.data); }; c.postMessage({ type: 'p0-status' }, [ch.port2]); }); }
+  async function swStatus(prefix) {
+    const reg = await navigator.serviceWorker.getRegistration(); const st = await swAsk();
+    if (!reg) { set('sw', 'warn', 'Not installed', (prefix || '') + 'Not made available offline yet. Tap “Make available offline”.'); return null; }
+    if (!st) { set('sw', 'warn', 'Installing', (prefix || '') + 'Registered; it takes control after the page is opened again. Close and reopen, or tap “Check offline status”.'); return null; }
+    const full = st.count === st.expected;
+    set('sw', full ? 'pass' : 'fail', full ? 'Offline ready' : 'Incomplete', (prefix || '') + 'Offline copy build ' + st.build + ': ' + st.count + ' of ' + st.expected + ' files cached (' + fmt(st.bytes) + '). ' + (full ? 'This page and all eight pictures will open with no connection.' : 'Not complete.'));
+    return st;
+  }
+  async function serviceWorker() {
+    if (MODE === 'file') { set('sw', 'info', 'Not needed', 'A saved copy needs no service worker: everything is inside the file.'); return; }
+    if (MODE === 'artifact') {
+      let plain = 'not tried';
+      try { const r = await timeoutFetch('p0-sw.js', 10000); const tx = await r.text(); plain = 'HTTP ' + r.status + (r.ok ? ' (' + tx.length + ' bytes, ' + (/Phase 0 test service worker/.test(tx) ? 'the right file' : 'unexpected content') + ')' : ''); } catch (e) { plain = 'failed (' + e.message + ')'; }
+      R.swPlain = plain;
+      if (!env.swApi) { set('sw', 'fail', 'Not available', 'No service worker support in this place. Fetching p0-sw.js as an ordinary file: ' + plain + '.'); return; }
+      try {
+        const reg = await Promise.race([navigator.serviceWorker.register('p0-sw.js'), new Promise((_, no) => setTimeout(() => no(new Error('no answer after 10 s')), 10000))]);
+        set('sw', 'pass', 'Works', 'A service worker registered at ' + reg.scope + '. Fetching p0-sw.js as an ordinary file: ' + plain + '.');
+      } catch (e) { set('sw', 'fail', 'Blocked', 'Registration refused: ' + e.name + ': ' + e.message + '. Fetching the same file as an ordinary file: ' + plain + '. ' + (/HTTP 2\d\d/.test(plain) ? 'So the file itself is reachable; the host refuses it only as a service worker.' : '')); }
+      return;
+    }
+    // GitHub Pages: the real offline engine
+    $('sw-buttons').hidden = false;
+    if (!env.swApi) { set('sw', 'fail', 'Not available', 'This browser offers no service worker here.'); return; }
+    navigator.serviceWorker.addEventListener('message', e => { const d = e.data || {}; if (d.type === 'p0-progress') { const p = $('swprog'); p.hidden = false; p.value = d.done / d.total; } });
+    navigator.serviceWorker.addEventListener('controllerchange', () => swStatus());
+    await swStatus();
+  }
+  async function install(script, label) {
+    try {
+      const reg = await navigator.serviceWorker.register(script);
+      const w = reg.installing || reg.waiting;
+      if (w) await new Promise(res => { const f = () => { if (w.state === 'activated' || w.state === 'redundant') res(); }; w.addEventListener('statechange', f); f(); });
+      $('swprog').hidden = true;
+      return { ok: !w || w.state === 'activated', state: w ? w.state : 'unchanged' };
+    } catch (e) { $('swprog').hidden = true; return { ok: false, state: 'refused', err: e.message }; }
+  }
+  $('b-install').onclick = async () => { $('b-install').disabled = true; chip('sw', 'wait', 'Downloading'); const r = await install('sw.js'); $('b-install').disabled = false; await new Promise(x => setTimeout(x, 500)); const st = await swStatus(r.ok ? '' : 'The offline download did not complete (' + (r.err || r.state) + '). '); if (r.ok && !st) set('sw', 'pass', 'Installed', 'Installed. Close and reopen the page once so it takes control, then check again.'); };
+  $('b-swcheck').onclick = () => swStatus();
+  $('b-update').onclick = async () => { const reg = await navigator.serviceWorker.getRegistration(); if (!reg) { swStatus(); return; } chip('sw', 'wait', 'Checking'); try { await reg.update(); } catch (e) {} const w = reg.installing || reg.waiting; if (w) await new Promise(res => { const f = () => { if (w.state === 'activated' || w.state === 'redundant') res(); }; w.addEventListener('statechange', f); f(); }); setTimeout(() => swStatus(w ? 'An update was found and installed. ' : 'No newer build was found. '), 600); };
+
+  /* ---------- 5 + 6 (Claude and saved copy): keep pictures on the device, all or nothing ---------- */
+  function idb() { return new Promise((res, rej) => { const q = indexedDB.open(DB, 1); q.onupgradeneeded = () => { q.result.createObjectStore('files'); q.result.createObjectStore('meta'); }; q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
+  function tx(db, stores, mode, fn) { return new Promise((res, rej) => { const t = db.transaction(stores, mode); const out = fn(t); t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error || new Error('aborted')); }); }
+  async function readMeta() { try { const db = await idb(); let m; await tx(db, ['meta'], 'readonly', t => { const r = t.objectStore('meta').get('install'); r.onsuccess = () => { m = r.result; }; }); db.close(); return m || null; } catch (e) { return { error: e.message }; } }
+  async function verifyStored() {
+    const db = await idb(); const files = {}; await tx(db, ['files'], 'readonly', t => { for (const a of ART) { const r = t.objectStore('files').get(a.file); r.onsuccess = () => { files[a.file] = r.result; }; } }); db.close();
+    let good = 0; for (const a of ART) { const b = files[a.file]; if (b && b.size === a.bytes && (await sha(await b.arrayBuffer())) === a.sha256) good++; }
+    return { good, files };
+  }
+  async function showStore() {
+    const m = await readMeta();
+    if (!m) { chip('store', 'wait', 'Not saved yet'); report(); return null; }
+    if (m.error) { set('store', 'fail', 'Storage error', 'This browser refused its storage here: ' + m.error); return null; }
+    const v = await verifyStored();
+    set('store', v.good === ART.length ? 'pass' : 'fail', v.good === ART.length ? 'Saved' : 'Incomplete', (v.good === ART.length ? 'A complete copy is saved on this device: ' : 'The saved copy is not complete: ') + v.good + ' of ' + ART.length + ' pictures verified, ' + fmt(m.bytes) + ', saved ' + m.when.replace('T', ' ').slice(0, 19) + ' UTC.');
+    return v;
+  }
+  async function storeInstall(opts) {
+    opts = opts || {}; const prog = $('prog'); prog.hidden = false; prog.value = 0;
+    const list = ART.map(a => Object.assign({}, a)); if (opts.missing) list.push({ file: 'art/does-not-exist.webp', bytes: 1, sha256: '0', type: 'image/webp', label: 'missing' }); if (opts.corrupt) list[2].sha256 = '0'.repeat(64);
+    const got = []; let bytes = 0;
+    try {
+      for (let i = 0; i < list.length; i++) {
+        const a = list[i]; if (opts.slow) await new Promise(r => setTimeout(r, 1500));
+        const r = await timeoutFetch(a.file, opts.slow ? 15000 : 30000); if (!r.ok) throw new Error(a.file + ' could not be downloaded (HTTP ' + r.status + ')');
+        const buf = await r.arrayBuffer(); if (buf.byteLength !== a.bytes || (await sha(buf)) !== a.sha256) throw new Error(a.file + ' did not match its fingerprint');
+        got.push([a, new Blob([buf], { type: a.type })]); bytes += buf.byteLength; prog.value = (i + 1) / list.length;
+      }
+      const db = await idb();
+      await tx(db, ['files', 'meta'], 'readwrite', t => { for (const [a, b] of got) t.objectStore('files').put(b, a.file); t.objectStore('meta').put({ when: new Date().toISOString(), bytes, n: got.length }, 'install'); });
+      db.close(); return { ok: true, bytes };
+    } catch (e) { return { ok: false, err: e.name === 'AbortError' ? 'the download was interrupted (no answer)' : (e.name === 'TypeError' ? 'the connection was lost (' + e.message + ')' : e.message) }; }
+    finally { prog.hidden = true; }
+  }
+  $('b-save').onclick = async () => { const b = $('b-save'); b.disabled = true; chip('store', 'wait', 'Saving'); const r = await storeInstall(); b.disabled = false; if (!r.ok) { set('store', 'fail', 'Not saved', 'The download did not complete, so nothing new was saved: ' + r.err + '.'); } await showStore(); };
+  $('b-local').onclick = async () => {
+    const m = await readMeta(); if (!m || m.error) { set('store', 'warn', 'Nothing saved', 'There is no saved copy on this device yet. Save it first, with a connection.'); return; }
+    const v = await verifyStored(); let shown = 0;
+    for (const a of ART) { const b = v.files[a.file]; if (b && (await drawBlob(a, b, 'from this device')).ok) shown++; }
+    logVisit({ fromDevice: shown });
+    set('store', shown === ART.length ? 'pass' : 'fail', shown === ART.length ? 'Shown offline' : 'Incomplete', shown + ' of ' + ART.length + ' pictures shown from this device without using the network' + (navigator.onLine ? ' (you are online now; repeat this in airplane mode).' : ', with no connection.'));
+  };
+
+  /* ---------- 6. failure cases: browser storage (Claude) or service worker (GitHub Pages) ---------- */
+  async function failCase(kind) {
+    const name = { missing: 'Missing file', corrupt: 'Damaged file', slow: 'Slow download' }[kind];
+    $('d-fail').textContent = (kind === 'slow' ? 'Downloading slowly… switch on airplane mode now.' : 'Trying…');
+    let line, ok;
+    if (MODE === 'pages') {
+      const before = await swAsk();
+      const r = await install('sw.js?fail=' + kind, name);
+      await install('sw.js');   // the normal engine stays registered (no download if it is already current)
+      const after = await swAsk();
+      const kept = before ? (after && after.build === before.build && after.count === after.expected) : !after;
+      ok = !r.ok && kept;
+      line = name + ': ' + (r.ok ? 'reported SUCCESS (wrong: it should have failed)' : 'install failed as it should (' + (r.err || r.state) + ')') + '; offline copy ' + (before ? (kept ? 'still complete (' + after.count + ' of ' + after.expected + ')' : 'CHANGED or incomplete') : (kept ? 'none before, none after' : 'something was installed (wrong)')) + '.';
+      if (kind === 'slow' && r.ok) { ok = true; line = 'Slow download: completed normally (the connection was not cut during it). Repeat it and switch on airplane mode while it runs.'; }
+    } else {
+      const before = await readMeta(); const hadCopy = !!(before && !before.error);
+      const r = await storeInstall({ missing: kind === 'missing', corrupt: kind === 'corrupt', slow: kind === 'slow' });
+      const after = await readMeta(); const v = after && !after.error ? await verifyStored() : { good: 0 };
+      const kept = hadCopy ? (after && after.when === before.when && v.good === ART.length) : !after;
+      ok = !r.ok && kept;
+      line = name + ': ' + (r.ok ? 'reported SUCCESS (wrong: it should have failed)' : 'reported failure (' + r.err + ')') + '; earlier copy ' + (hadCopy ? (kept ? 'still complete' : 'CHANGED or damaged') : (kept ? 'none before, none after' : 'something was saved (wrong)')) + '.';
+      if (kind === 'slow' && r.ok) { ok = true; line = 'Slow download: completed normally (the connection was not cut during it). Repeat it and switch on airplane mode while the bar moves.'; }
+    }
+    R['fail_' + kind] = { ok, line };
+    const lines = ['missing', 'corrupt', 'slow'].filter(k => R['fail_' + k]).map(k => R['fail_' + k].line);
+    $('d-fail').textContent = lines.join(' ');
+    const allOk = ['missing', 'corrupt', 'slow'].filter(k => R['fail_' + k]).every(k => R['fail_' + k].ok);
+    R.fail = { state: allOk ? 'pass' : 'fail', text: allOk ? 'Pass' : 'Fail', detail: lines.join(' ') }; chip('fail', allOk ? 'pass' : 'fail', allOk ? 'Pass' : 'Fail'); report();
+  }
+  $('b-missing').onclick = () => failCase('missing'); $('b-corrupt').onclick = () => failCase('corrupt'); $('b-slow').onclick = () => failCase('slow');
+
+  /* ---------- 8. save an offline copy: one HTML file with every picture and the sample progress inside ---------- */
+  async function picturesAsDataURIs() {
+    const out = {};
+    for (const a of ART) {
+      let blob = null;
+      if (EMBED) blob = blobFromDataURI(EMBED.art[a.file]);
+      else { try { const r = await fetch(a.file); if (r.ok) blob = await r.blob(); } catch (e) {} if (!blob) { const m = await readMeta(); if (m && !m.error) { const v = await verifyStored(); blob = v.files[a.file] || null; } } }
+      if (!blob) throw new Error('could not get ' + a.file + ' (no connection and no copy saved on this device)');
+      const buf = await blob.arrayBuffer(); if ((await sha(buf)) !== a.sha256) throw new Error(a.file + ' did not match its fingerprint');
+      out[a.file] = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).replace(/^data:[^;]*;/, 'data:' + a.type + ';')); fr.onerror = () => rej(fr.error); fr.readAsDataURL(blob); });
+    }
+    return out;
+  }
+  async function buildCopy() {
+    const art = await picturesAsDataURIs();
+    const doc = document.cloneNode(true);
+    for (const s of [...doc.querySelectorAll('script')]) if (!s.hasAttribute('data-p0')) s.remove();   // only this test's own code
+    for (const s of [...doc.querySelectorAll('#p0-embed')]) s.remove();
+    doc.querySelector('main').innerHTML = PRISTINE;   // a clean page: no results or statuses carried over
+    for (const l of [...doc.querySelectorAll('link[rel="manifest"],link[rel="apple-touch-icon"]')]) l.remove();
+    const emb = doc.createElement('script'); emb.id = 'p0-embed'; emb.setAttribute('data-p0', '');
+    emb.textContent = 'window.P0_EMBED = ' + JSON.stringify({ art, progress: progress(), madeFrom: MODE, made: new Date().toISOString() }).replace(/</g, '\\u003c') + ';';
+    const main = doc.querySelector('script[data-p0]:not(#p0-embed)'); main.parentNode.insertBefore(emb, main);
+    if (!doc.querySelector('meta[charset]')) { const m = doc.createElement('meta'); m.setAttribute('charset', 'utf-8'); doc.head.prepend(m); }
+    if (!doc.querySelector('meta[name="viewport"]')) { const m = doc.createElement('meta'); m.name = 'viewport'; m.content = 'width=device-width,initial-scale=1,viewport-fit=cover'; doc.head.append(m); }
+    return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+  }
+  $('b-offcopy').onclick = async () => {
+    const b = $('b-offcopy'); b.disabled = true; chip('copy', 'wait', 'Building');
+    try {
+      const html = await buildCopy(), filename = 'artwork-test-offline.html', size = new Blob([html]).size;
+      let how = null, dl = null;
+      if (window.claude && window.claude.use) { try { dl = await window.claude.use('downloads'); } catch (e) { dl = null; } }
+      if (dl) {
+        try { await dl.save({ filename, data: html }); how = 'saved through Claude’s download permission'; }
+        catch (e) { const c = e && e.code; set('copy', c === 'declined' ? 'warn' : 'fail', c === 'declined' ? 'Declined' : 'Not saved', (c === 'declined' ? 'You declined the save.' : 'The save was refused: ' + (c || e.message) + '.') + ' The copy was built correctly (' + fmt(size) + ').'); b.disabled = false; return; }
+      } else if (MODE === 'artifact') { set('copy', 'fail', 'Unavailable', 'Claude’s download permission is not available in this view, so the file cannot be saved here. The copy was built correctly (' + fmt(size) + ').'); b.disabled = false; return; }
+      else { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' })); a.download = filename; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); how = 'offered as a browser download'; }
+      set('copy', 'pass', 'Saved', 'artwork-test-offline.html (' + fmt(size) + ', all eight pictures and the sample progress inside) was ' + how + '. Open it from your downloads with no connection.');
+    } catch (e) { set('copy', 'fail', 'Not built', 'The copy could not be built: ' + e.message + '.'); }
+    b.disabled = false;
+  };
+
+  /* ---------- instructions, per place ---------- */
+  const HOW = {
+    artifact: `<p class="detail"><strong>Test A on each device: phone, tablet and desktop.</strong></p>
+<ol class="steps"><li>With a connection, open this page and wait until steps 1–4 finish. Step 4 now also says whether the service-worker file can be fetched as an ordinary file.</li>
+<li>Tap <strong>Record a game</strong> once in step 7 and note the number of games.</li>
+<li>Tap <strong>Save offline copy</strong> in step 8 and accept Claude’s save prompt.</li>
+<li>Switch on airplane mode (Wi-Fi off too).</li>
+<li>Find <strong>artwork-test-offline.html</strong> in your downloads and open it. On a desktop, double-click it; on Android, open it from the Files or Downloads app (choose Chrome if asked); on iPhone or iPad, open it from the Files app.</li>
+<li>If it opens and runs, the top line says “Running as a saved offline copy”; steps 2 and 3 should pass with all eight pictures, and step 7 should show your number of games. Tap <strong>Record a game</strong>, close the file, open it again: the number should have gone up.</li>
+<li>If it shows text but no pictures, or does nothing, note exactly what you saw. That is a result too.</li>
+<li>Back online, copy the results from step 10 (in the saved file and here) and paste them to me.</li></ol>`,
+    file: `<p class="detail">You are in the saved copy. With no connection, check steps 1–3 and 7, tap <strong>Record a game</strong>, close the file and open it again: the number of games should still be there. Then copy the results in step 10.</p>`,
+    pages: `<p class="detail"><strong>Test B on each device.</strong> Do steps 1–3 with a connection.</p>
+<ol class="steps"><li>Tap <strong>Make available offline</strong> in step 4 and wait for “Offline ready, 12 of 12 files”. If it says it takes control after reopening, close and reopen the page, then tap <strong>Check offline status</strong>.</li>
+<li><strong>Add it to the home screen.</strong> iPhone and iPad: open this page in Safari, tap the Share button, then <strong>Add to Home Screen</strong>, then Add. Android: in Chrome, tap the ⋮ menu, then <strong>Add to Home screen</strong> or <strong>Install app</strong>. Desktop Chrome or Edge: the install icon at the right of the address bar (or menu, then Install).</li>
+<li>Open it from the home-screen icon (it opens as its own app). On iPhone and iPad the home-screen app keeps its own storage, separate from Safari, so tap <strong>Make available offline</strong> once more inside it, and tap <strong>Record a game</strong> once.</li>
+<li>Close the app fully, switch on airplane mode (Wi-Fi off too), and open it from the home screen again. Step 1 should say “Opened with no connection”, steps 2–3 should show all eight pictures (“from the offline cache”), and step 7 should still show your games.</li>
+<li>Still offline: tap <strong>Slow download</strong> in step 6. It should fail straight away and keep the offline copy complete. Also try the missing and damaged file buttons when online again.</li>
+<li>Back online: I will publish a newer build when you tell me. Then open the app, tap <strong>Check for an update</strong>: the build number at the top should change, and your games in step 7 must be unchanged.</li>
+<li>Copy the results in step 10 and paste them to me.</li></ol>`
+  };
+  $('howto').innerHTML = HOW[MODE];
+  const failIntro = { artifact: 'Each button attempts a download that must fail. The check passes only if the page reports the failure and the earlier saved copy (step 5) is still complete afterwards.', file: 'Not used in a saved copy: it never downloads anything.', pages: 'Each button asks the offline engine to install a version that must fail (a missing file, a damaged file, or a slow download you interrupt with airplane mode). It passes only if the failure is reported and the existing offline copy stays complete.' };
+  $('d-failintro').textContent = failIntro[MODE];
+  if (MODE === 'file') { $('s-store').hidden = true; for (const id of ['b-missing', 'b-corrupt', 'b-slow']) $(id).disabled = true; }
+  if (MODE === 'pages') $('s-store').hidden = true;
+
+  /* ---------- 10. results ---------- */
+  function report() {
+    const order = [['env', 'This device and page'], ['files', 'Pictures load'], ['canvas', 'Canvas drawing'], ['sw', 'Service worker'], ['store', 'Pictures kept on this device'], ['fail', 'Failed downloads handled'], ['copy', 'Offline copy saved']];
+    const p = progress();
+    const out = ['Future Classic · Artwork Loading Test · ' + ({ artifact: 'Test A (Claude)', file: 'Test A (saved offline copy)', pages: 'Test B (GitHub Pages)' })[MODE] + (MODE === 'artifact' ? '' : ' · build ' + BUILD), 'When: ' + (env.when || ''), 'Device: ' + (env.ua || ''), 'Screen: ' + (env.screen || '') + ' · page ' + (env.origin || '') + ' · home-screen app ' + env.standalone + ' · secure ' + env.secure + ' · in frame ' + env.framed, 'APIs: service worker ' + env.swApi + ', Cache Storage ' + env.cacheApi + ', browser storage ' + env.idb + ', localStorage ' + env.localStorage + ', quota ' + (env.quota || '?') + ', persisted ' + env.persisted, ''];
+    for (const [k, n] of order) { const r = R[k]; if (!r && ((k === 'store' && MODE !== 'artifact') || (k === 'fail' && MODE === 'file'))) continue; out.push(n + ': ' + (r ? r.text.toUpperCase() : 'NOT RUN') + (r && r.detail ? ' — ' + r.detail : '')); }
+    out.push('Sample progress: ' + (p ? p.games + ' games, ' + p.wins + ' wins, started in ' + p.origin + (p.importedFromCopy ? ', imported from the offline copy' : '') + ', last changed ' + p.updated : 'none'));
+    let log = []; try { log = JSON.parse(ls.get(LOGKEY) || '[]'); } catch (e) {}
+    out.push('', 'Visits: ' + log.map(l => l.when.slice(5, 16).replace('T', ' ') + (l.online ? ' online' : ' OFFLINE') + (l.build ? ' b' + l.build : '') + (l.fromDevice != null ? ' (' + l.fromDevice + '/' + ART.length + ' offline)' : '')).join(' | '));
+    $('results').value = out.join('\n'); chip('results', 'info', 'Ready to copy');
+  }
+  $('b-copy').onclick = async () => { const t = $('results'); try { await navigator.clipboard.writeText(t.value); $('d-copyres').textContent = 'Copied. Paste it into our conversation.'; } catch (e) { t.focus(); t.select(); $('d-copyres').textContent = 'Copying was refused here. The text is selected: copy it with your device’s Copy command.'; } };
+  $('b-clear').onclick = async () => {
+    try { indexedDB.deleteDatabase(DB); } catch (e) {} ls.del(LOGKEY); ls.del(PROGKEY);
+    try { if (navigator.serviceWorker) for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); } catch (e) {}
+    try { if (window.caches) for (const k of await caches.keys()) if (k.startsWith('p0-')) await caches.delete(k); } catch (e) {}
+    $('d-copyres').textContent = 'This test’s pictures, progress, visit log and offline copy were removed from this device.'; ensureProg(); showProg();
+  };
+
+  (async () => { ensureProg(); showProg(); await environment(); await pictures(); await serviceWorker(); if (MODE === 'artifact') { await showStore(); if (!navigator.onLine) $('b-local').click(); } report(); })();
+})();
+</script>
+
+</body></html>
